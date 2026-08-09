@@ -198,19 +198,68 @@ st.components.v1.html(
           letter-spacing:0.5px;
           cursor:pointer;
           box-shadow:0 4px 14px rgba(64,224,208,0.5);
-      ">🎵 Putar Musik Ulang Tahun</button>
+      ">🎉 Putar Musik Ulang Tahun</button>
       <p id="status-text" style="
           display:none;
           color:#7fffd4;
           font-size:0.85rem;
           text-align:center;
           font-family:'Trebuchet MS', sans-serif;
-      ">🎶 Musik sedang diputar...</p>
+      ">🎉 Musik pesta sedang diputar...</p>
     </div>
 
     <script>
     let ctx = null;
     let played = false;
+
+    function playTone(freq, time, dur, type, vol) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.0001, time);
+        gain.gain.exponentialRampToValueAtTime(vol, time + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(time);
+        osc.stop(time + dur + 0.05);
+    }
+
+    function playClap(time) {
+        const bufferSize = Math.floor(ctx.sampleRate * 0.06);
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+        }
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = ctx.createBiquadFilter();
+        filter.type = "highpass";
+        filter.frequency.value = 1200;
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.18, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        noise.start(time);
+    }
+
+    function playKick(time) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(120, time);
+        osc.frequency.exponentialRampToValueAtTime(40, time + 0.15);
+        gain.gain.setValueAtTime(0.35, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(time);
+        osc.stop(time + 0.2);
+    }
 
     function playHappyBirthday() {
         if (played) return;
@@ -218,6 +267,7 @@ st.components.v1.html(
         if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
         if (ctx.state === "suspended") ctx.resume();
 
+        const tempo = 0.72; // lebih cepat & meriah dari versi sebelumnya
         const notes = [
             261.63, 261.63, 293.66, 261.63, 349.23, 329.63,
             261.63, 261.63, 293.66, 261.63, 392.00, 349.23,
@@ -229,22 +279,45 @@ st.components.v1.html(
             0.3, 0.2, 0.5, 0.5, 0.5, 1.0,
             0.3, 0.2, 0.5, 0.5, 0.5, 0.5, 1.0,
             0.3, 0.2, 0.5, 0.5, 0.5, 1.0
-        ];
-        let time = ctx.currentTime + 0.2;
+        ].map(d => d * tempo);
+
+        const startTime = ctx.currentTime + 0.15;
+
+        // 1) melodi utama
+        let t = startTime;
         notes.forEach((freq, i) => {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = "sine";
-            osc.frequency.value = freq;
-            gain.gain.setValueAtTime(0.001, time);
-            gain.gain.exponentialRampToValueAtTime(0.22, time + 0.05);
-            gain.gain.exponentialRampToValueAtTime(0.001, time + durations[i]);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start(time);
-            osc.stop(time + durations[i] + 0.05);
-            time += durations[i];
+            playTone(freq, t, durations[i], "triangle", 0.3);
+            t += durations[i];
         });
+        const totalDuration = t - startTime;
+
+        // 2) bass line pengiring biar lebih "hidup"
+        const bassNotes = [130.81, 174.61, 130.81, 196.00, 130.81, 261.63];
+        const bassDur = totalDuration / bassNotes.length;
+        let bt = startTime;
+        bassNotes.forEach(freq => {
+            playTone(freq, bt, bassDur * 0.85, "sawtooth", 0.13);
+            bt += bassDur;
+        });
+
+        // 3) ketukan pesta (clap + kick bergantian) sepanjang lagu
+        let pt = startTime;
+        let beat = 0;
+        while (pt < startTime + totalDuration) {
+            if (beat % 2 === 0) { playKick(pt); } else { playClap(pt); }
+            pt += 0.25 * tempo * 2;
+            beat++;
+        }
+
+        // 4) flourish "party horn" naik di akhir lagu, biar makin meriah
+        const flourish = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+        let ft = startTime + totalDuration + 0.15;
+        flourish.forEach(freq => {
+            playTone(freq, ft, 0.18, "square", 0.22);
+            ft += 0.11;
+        });
+        playClap(ft);
+        playClap(ft + 0.12);
 
         document.getElementById("play-btn").style.display = "none";
         document.getElementById("status-text").style.display = "block";
