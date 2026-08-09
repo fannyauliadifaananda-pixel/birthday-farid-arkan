@@ -2,8 +2,8 @@
 """
 🤠🚀 HAPPY BIRTHDAY SAYANGNYA AKOOO 🚀🤠
 =========================================
-Web app ucapan ulang tahun bertema "Toy Box" ala kartun mainan
-(langit biru berawan khas kamar anak, kayu peti mainan, bintang sheriff,
+Web app ucapan ulang tahun
+(langit biru dan pink berawan, kayu peti mainan, bintang sheriff,
 roket, koboi, robot, dadu) -- terinspirasi nuansa Toy Story TANPA memakai
 nama karakter, logo, atau desain resmi Disney/Pixar (itu hak cipta orang
 lain, jadi sengaja dibuat versi generik biar aman dipakai & dibagikan).
@@ -16,7 +16,7 @@ isinya SATU BARIS -> streamlit
 Tanpa file itu, Streamlit Cloud tidak tahu library apa yang harus diinstall.
 
 Fitur unik di versi ini:
-- ☁️ Latar langit biru cerah dengan awan mengambang, khas kamar mainan
+- ☁️ Latar langit biru dan pink dengan awan mengambang
 - 🪵 Kartu ucapan bergaya peti kayu mainan dengan jahitan tali di pinggir
 - 🚀🤠⭐🎲🧸🪀 Ikon-ikon mainan melayang naik terus-menerus di layar
 - 🔤 Judul huruf balok mainan warna-warni yang goyang bergantian
