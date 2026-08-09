@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🤠🚀 HAPPY BIRTHDAY SAYANGNYA AKOOO 🚀🤠
+🤠🚀 a special day for you 🚀🤠
 =========================================
 Web app ucapan ulang tahun
 (langit biru dan pink berawan, kayu peti mainan, bintang sheriff,
