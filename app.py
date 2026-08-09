@@ -185,7 +185,7 @@ st.markdown(
 # begitu diklik, tanpa perlu file mp3 apapun).
 st.components.v1.html(
     """
-    <div id="music-wrap" style="display:flex; justify-content:center; margin-top:10px;">
+    <div id="music-wrap" style="display:flex; flex-direction:column; align-items:center; margin-top:10px;">
       <button id="play-btn" style="
           display:none;
           background: linear-gradient(90deg, #40e0d0, #48cae4);
@@ -205,7 +205,7 @@ st.components.v1.html(
           font-size:0.85rem;
           text-align:center;
           font-family:'Trebuchet MS', sans-serif;
-      ">🎉 Musik pesta sedang diputar...</p>
+      ">🎊 Musik pesta sedang diputar...</p>
     </div>
 
     <script>
@@ -261,38 +261,44 @@ st.components.v1.html(
         osc.stop(time + 0.2);
     }
 
+    // Melodi ORIGINAL ceria (bukan lagu "Happy Birthday" standar),
+    // dibuat sendiri dari kode - jadi bebas hak cipta, khusus buat
+    // suasana pesta ulang tahun yang upbeat.
     function playHappyBirthday() {
         if (played) return;
         played = true;
         if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
         if (ctx.state === "suspended") ctx.resume();
 
-        const tempo = 0.72; // lebih cepat & meriah dari versi sebelumnya
+        const tempo = 0.22; // durasi per not, cepat & ceria
+
+        // melodi original: naik-turun riang, skala C mayor pentatonik + sentuhan G
         const notes = [
-            261.63, 261.63, 293.66, 261.63, 349.23, 329.63,
-            261.63, 261.63, 293.66, 261.63, 392.00, 349.23,
-            261.63, 261.63, 523.25, 440.00, 349.23, 329.63, 293.66,
-            466.16, 466.16, 440.00, 349.23, 392.00, 349.23
+            392.00, 440.00, 493.88, 523.25, 587.33, 523.25, 493.88, 440.00,
+            392.00, 440.00, 493.88, 587.33, 659.25, 587.33, 523.25, 493.88,
+            440.00, 493.88, 523.25, 587.33, 659.25, 783.99, 659.25, 523.25,
+            587.33, 523.25, 493.88, 440.00, 392.00, 440.00, 493.88, 523.25
         ];
-        const durations = [
-            0.3, 0.2, 0.5, 0.5, 0.5, 1.0,
-            0.3, 0.2, 0.5, 0.5, 0.5, 1.0,
-            0.3, 0.2, 0.5, 0.5, 0.5, 0.5, 1.0,
-            0.3, 0.2, 0.5, 0.5, 0.5, 1.0
-        ].map(d => d * tempo);
+        const beatPattern = [
+            1, 1, 1, 1, 1.5, 0.5, 1, 1,
+            1, 1, 1, 1, 1.5, 0.5, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 2
+        ];
+        const durations = beatPattern.map(b => b * tempo);
 
         const startTime = ctx.currentTime + 0.15;
 
         // 1) melodi utama
         let t = startTime;
         notes.forEach((freq, i) => {
-            playTone(freq, t, durations[i], "triangle", 0.3);
+            playTone(freq, t, durations[i] * 0.92, "triangle", 0.3);
             t += durations[i];
         });
         const totalDuration = t - startTime;
 
-        // 2) bass line pengiring biar lebih "hidup"
-        const bassNotes = [130.81, 174.61, 130.81, 196.00, 130.81, 261.63];
+        // 2) bass line pengiring (progresi C - Am - F - G, riang & bulat)
+        const bassNotes = [130.81, 110.00, 174.61, 196.00, 130.81, 110.00, 174.61, 196.00];
         const bassDur = totalDuration / bassNotes.length;
         let bt = startTime;
         bassNotes.forEach(freq => {
@@ -305,11 +311,11 @@ st.components.v1.html(
         let beat = 0;
         while (pt < startTime + totalDuration) {
             if (beat % 2 === 0) { playKick(pt); } else { playClap(pt); }
-            pt += 0.25 * tempo * 2;
+            pt += tempo * 2;
             beat++;
         }
 
-        // 4) flourish "party horn" naik di akhir lagu, biar makin meriah
+        // 4) flourish "party horn" naik di akhir, biar makin meriah
         const flourish = [523.25, 659.25, 783.99, 1046.50, 1318.51];
         let ft = startTime + totalDuration + 0.15;
         flourish.forEach(freq => {
