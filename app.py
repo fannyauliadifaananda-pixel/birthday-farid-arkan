@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
 """
-🎂 HAPPY BIRTHDAY SAYANG — Versi Web (Streamlit) 🎂
-=====================================================
-Aplikasi web ucapan ulang tahun otomatis, siap deploy ke Streamlit
-Community Cloud langsung dari GitHub.
+🎂✨ HAPPY BIRTHDAY SAYANGNYA AKOOO ✨🎂
+=========================================
+Web app ucapan ulang tahun bertema malam berbintang + neon glassmorphism,
+siap deploy dari GitHub ke Streamlit Community Cloud.
 
-Fitur:
-- 🎵 Musik "Happy Birthday" disintesis sendiri dari gelombang sinus
-  (tanpa file audio eksternal) dan diputar OTOMATIS begitu halaman dibuka.
-- 🎨 Judul teks pelangi animasi + balon melayang + kue ulang tahun.
-- ⌨️ Efek ucapan & doa muncul dengan animasi "typewriter".
-- ✏️ Nama "sayang" bisa diganti langsung dari sidebar.
-- 🎈 Efek confetti balon bawaan Streamlit.
+SEMUA KODE ADA DI SATU FILE INI (streamlit_app.py).
+Hanya ada 1 hal wajib di luar kode karena syarat platform Streamlit Cloud
+(bukan pilihan, murni aturan hosting): file kecil bernama `requirements.txt`
+isinya SATU BARIS -> streamlit
+Tanpa file itu, Streamlit Cloud tidak tahu library apa yang harus diinstall.
 
---------------------------------------------------------------------
-SEMUA KODE ADA DI SATU FILE INI. Hanya ada satu hal di luar kode yang
-wajib ada karena aturan platform Streamlit Cloud (bukan pilihan saya):
-sebuah file bernama `requirements.txt` berisi SATU BARIS "streamlit",
-supaya Streamlit Cloud tahu library apa yang perlu diinstall sebelum
-menjalankan app-mu. Tanpa file itu, platform tidak akan bisa install
-Streamlit sama sekali (ini murni syarat hosting, bukan bagian logika
-program).
+Fitur unik di versi ini:
+- 🌌 Latar langit malam dengan bintang berkelip + gradient bergerak
+- 💎 Kartu ucapan bergaya glassmorphism dengan judul neon berkedip pelangi
+- 🎈 Balon & 💝 hati melayang naik terus-menerus di layar
+- 🕯️ Kue ulang tahun dengan lilin yang nyala apinya berkedip (CSS)
+- 🎊 Confetti meledak otomatis saat halaman dibuka (canvas-confetti)
+- ⌨️ Doa ulang tahun muncul dengan efek mengetik huruf demi huruf (JS)
+- 🎵 Musik "Happy Birthday" disintesis SENDIRI dari gelombang sinus
+  (tanpa file mp3 eksternal) & diputar otomatis saat masuk halaman
+- ✏️ Nama bisa diganti dari sidebar tanpa edit kode
 
 CARA DEPLOY KE GITHUB + STREAMLIT (gratis):
 1. Buat repo baru di GitHub, upload file ini dengan nama `streamlit_app.py`.
@@ -33,7 +33,10 @@ CARA DEPLOY KE GITHUB + STREAMLIT (gratis):
 CARA JALANKAN LOKAL:
     pip install streamlit
     streamlit run streamlit_app.py
---------------------------------------------------------------------
+
+Catatan browser: sebagian browser (terutama di HP) memblokir autoplay
+audio bersuara sebelum ada interaksi pengguna. Kalau musik tidak otomatis
+bunyi, tombol "🔁 Putar Ulang Lagu" di halaman akan tetap memutarnya.
 """
 
 import base64
@@ -43,6 +46,7 @@ import struct
 import wave
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 # ------------------------------------------------------------------
 # 1. GENERATOR MUSIK "HAPPY BIRTHDAY" (sintesis gelombang sinus)
@@ -55,7 +59,6 @@ NOTE_FREQ = {
     "G5": 783.99, "REST": 0.0,
 }
 
-# Melodi "Happy Birthday to You"
 MELODY = [
     ("G4", 0.5), ("G4", 0.5), ("A4", 1.0), ("G4", 1.0), ("C5", 1.0), ("B4", 2.0),
     ("G4", 0.5), ("G4", 0.5), ("A4", 1.0), ("G4", 1.0), ("D5", 1.0), ("C5", 2.0),
@@ -116,159 +119,313 @@ def generate_wav_bytes():
     return buffer.getvalue()
 
 
-def autoplay_audio(wav_bytes: bytes):
-    """Putar audio otomatis begitu halaman dimuat, pakai tag HTML5 <audio autoplay>."""
-    b64 = base64.b64encode(wav_bytes).decode()
-    st.markdown(
-        f"""
-        <audio autoplay="true" loop>
-            <source src="data:audio/wav;base64,{b64}" type="audio/wav">
-        </audio>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
 # ------------------------------------------------------------------
-# 2. STYLE & TAMPILAN
+# 2. TEKS DOA
 # ------------------------------------------------------------------
 
 DOA = (
     "Semoga selalu diberi kesehatan, panjang umur, selalu disertai kenikmatan "
-    "dalam hidup dan rasa syukur, dan sukses.. aamiinn 🤲✨"
+    "dalam hidup dan rasa syukur, dan sukses.. aamiinn"
 )
+
+# ------------------------------------------------------------------
+# 3. CSS: LANGIT MALAM, KARTU GLASSMORPHISM, BALON & HATI MELAYANG
+# ------------------------------------------------------------------
 
 CSS = """
 <style>
 .stApp {
-    background: linear-gradient(135deg, #1e1033, #33184a, #4a1d5c);
+    background: radial-gradient(ellipse at top, #1b0d3a 0%, #0a0620 60%, #050311 100%);
     background-attachment: fixed;
+    overflow-x: hidden;
 }
+
+/* Bintang berkelip */
+.stars {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+        radial-gradient(2px 2px at 20px 30px, #fff, transparent),
+        radial-gradient(2px 2px at 140px 90px, #fff, transparent),
+        radial-gradient(1.5px 1.5px at 90px 40px, #ffd7f5, transparent),
+        radial-gradient(1.5px 1.5px at 200px 150px, #d7e9ff, transparent),
+        radial-gradient(2px 2px at 260px 60px, #fff, transparent),
+        radial-gradient(1.5px 1.5px at 320px 200px, #fff, transparent);
+    background-repeat: repeat;
+    background-size: 340px 220px;
+    animation: twinkle 3s ease-in-out infinite alternate;
+}
+@keyframes twinkle {
+    from { opacity: 0.35; }
+    to { opacity: 0.95; }
+}
+
 .rainbow-title {
+    position: relative;
+    z-index: 1;
     text-align: center;
-    font-size: 3rem;
+    font-size: 2.6rem;
     font-weight: 900;
-    background: linear-gradient(270deg, #ff0000, #ff9900, #ffee00, #33ff00, #00ffee, #0066ff, #cc00ff, #ff0000);
+    letter-spacing: 1px;
+    background: linear-gradient(270deg, #ff3cac, #ff9900, #ffee00, #33ff77, #00e5ff, #6a5cff, #ff3cac);
     background-size: 1600% 1600%;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: rainbow-move 6s linear infinite;
-    margin-bottom: 0;
+    text-shadow: 0 0 25px rgba(255, 255, 255, 0.15);
+    margin-bottom: 0.2rem;
 }
 @keyframes rainbow-move {
     0% { background-position: 0% 50%; }
     100% { background-position: 100% 50%; }
 }
+
 .subtitle {
+    position: relative;
+    z-index: 1;
     text-align: center;
     color: #ffd6f5;
-    font-size: 1.3rem;
+    font-size: 1.25rem;
     margin-top: 0;
+    text-shadow: 0 0 12px rgba(255, 214, 245, 0.5);
 }
-.balloon-row {
-    display: flex;
-    justify-content: center;
-    gap: 2.5rem;
-    font-size: 3rem;
-    margin: 1rem 0;
+
+/* Kartu kaca */
+.glass-card {
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+    margin: 1.5rem auto;
+    padding: 1.8rem 2rem;
+    border-radius: 26px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 0 40px rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(6px);
 }
-.balloon {
-    animation: float 3s ease-in-out infinite;
+
+/* Balon & hati melayang */
+.floaters {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
 }
-.balloon:nth-child(2) { animation-delay: 0.4s; }
-.balloon:nth-child(3) { animation-delay: 0.8s; }
-.balloon:nth-child(4) { animation-delay: 1.2s; }
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-18px); }
+.floaters span {
+    position: absolute;
+    bottom: -60px;
+    font-size: 2.2rem;
+    opacity: 0.85;
+    animation-name: rise;
+    animation-timing-function: ease-in;
+    animation-iteration-count: infinite;
 }
-.cake-box {
+@keyframes rise {
+    0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+    10%  { opacity: 0.9; }
+    100% { transform: translateY(-115vh) translateX(30px) rotate(15deg); opacity: 0; }
+}
+
+/* Kue & lilin */
+.cake-wrap {
+    position: relative;
+    z-index: 1;
     text-align: center;
-    font-size: 4rem;
-    margin: 0.5rem 0;
-    animation: pulse 1.6s ease-in-out infinite;
+    margin: 0.3rem 0 0.8rem 0;
 }
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.08); }
+.cake-emoji {
+    font-size: 4.2rem;
+    display: inline-block;
+    animation: bob 2.2s ease-in-out infinite;
 }
+@keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+.candle {
+    display: inline-block;
+    font-size: 1.6rem;
+    animation: flicker 0.9s ease-in-out infinite alternate;
+    filter: drop-shadow(0 0 8px #ffb703);
+}
+@keyframes flicker {
+    from { opacity: 1; transform: scale(1); }
+    to   { opacity: 0.7; transform: scale(0.92) translateY(-2px); }
+}
+
 .wish-box {
+    position: relative;
+    z-index: 1;
     text-align: center;
     color: #fff;
-    font-size: 1.6rem;
+    font-size: 1.35rem;
     font-weight: 700;
-    margin-top: 1rem;
-    padding: 1rem;
-    animation: fadein 1.5s ease-in;
+    margin-top: 0.5rem;
+    text-shadow: 0 0 14px rgba(255, 182, 235, 0.6);
 }
-@keyframes fadein {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.doa-box {
-    max-width: 680px;
-    margin: 1.5rem auto;
-    padding: 1.3rem 1.6rem;
-    border-radius: 18px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 215, 0, 0.4);
-    color: #ffe9a8;
-    font-size: 1.15rem;
-    line-height: 1.7;
+
+.doa-title {
     text-align: center;
-    animation: fadein 2.2s ease-in;
+    color: #ffe9a8;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    opacity: 0.85;
 }
 </style>
+
+<div class="stars"></div>
+<div class="floaters">
+    <span style="left:5%;  animation-duration:9s;  animation-delay:0s;">🎈</span>
+    <span style="left:15%; animation-duration:11s; animation-delay:1.5s;">💗</span>
+    <span style="left:28%; animation-duration:8s;  animation-delay:3s;">🎈</span>
+    <span style="left:42%; animation-duration:12s; animation-delay:0.5s;">✨</span>
+    <span style="left:56%; animation-duration:10s; animation-delay:2s;">💗</span>
+    <span style="left:68%; animation-duration:9.5s;animation-delay:4s;">🎈</span>
+    <span style="left:80%; animation-duration:11s; animation-delay:1s;">✨</span>
+    <span style="left:90%; animation-duration:8.5s; animation-delay:2.5s;">💗</span>
+</div>
 """
 
 
+def autoplay_audio_html(wav_bytes: bytes) -> str:
+    b64 = base64.b64encode(wav_bytes).decode()
+    return f"""
+    <audio autoplay="true" loop>
+        <source src="data:audio/wav;base64,{b64}" type="audio/wav">
+    </audio>
+    """
+
+
+CONFETTI_JS = """
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+<script>
+function fireConfetti() {
+    if (typeof confetti !== 'function') { return; }
+    var duration = 3000;
+    var end = Date.now() + duration;
+    (function frame() {
+        confetti({ particleCount: 4, angle: 60, spread: 65, origin: { x: 0 }, colors: ['#ff3cac','#ffee00','#00e5ff','#6a5cff'] });
+        confetti({ particleCount: 4, angle: 120, spread: 65, origin: { x: 1 }, colors: ['#ff3cac','#ffee00','#00e5ff','#6a5cff'] });
+        if (Date.now() < end) { requestAnimationFrame(frame); }
+    })();
+    confetti({ particleCount: 120, spread: 100, origin: { y: 0.4 } });
+}
+window.addEventListener('load', fireConfetti);
+setTimeout(fireConfetti, 300);
+</script>
+"""
+
+
+def typewriter_component(text: str, speed_ms: int = 35, height: int = 140):
+    safe_text = text.replace("\\", "\\\\").replace("`", "\\`").replace("</", "<\\/")
+    html = f"""
+    <div style="
+        font-family: 'Trebuchet MS', sans-serif;
+        text-align:center;
+        color:#ffe9a8;
+        font-size:1.05rem;
+        line-height:1.7;
+        max-width:640px;
+        margin:0 auto;
+        min-height:{height - 20}px;
+    ">
+        <span id="typed"></span><span id="cursor" style="opacity:1;">🤲</span>
+    </div>
+    <script>
+    const text = `{safe_text}`;
+    let i = 0;
+    const el = document.getElementById('typed');
+    function tick() {{
+        if (i <= text.length) {{
+            el.textContent = text.slice(0, i);
+            i++;
+            setTimeout(tick, {speed_ms});
+        }}
+    }}
+    tick();
+    </script>
+    """
+    components.html(html, height=height)
+
+
+# ------------------------------------------------------------------
+# 4. HALAMAN UTAMA
+# ------------------------------------------------------------------
+
 def main():
-    st.set_page_config(page_title="Happy Birthday Sayang 🎂", page_icon="🎂", layout="centered")
+    st.set_page_config(
+        page_title="Happy Birthday Sayangnya Akoo 🎂",
+        page_icon="🎂",
+        layout="centered",
+    )
     st.markdown(CSS, unsafe_allow_html=True)
+    components.html(CONFETTI_JS, height=0, width=0)
 
     with st.sidebar:
         st.header("✏️ Kustomisasi")
-        nama = st.text_input("Nama sayang", value="Sayang")
+        nama = st.text_input("Nama panggilan", value="SAYANGNYA AKOOO")
         putar_musik = st.checkbox("🎵 Putar musik otomatis", value=True)
-        st.caption("Ganti nama di atas, ucapan & judul akan otomatis ikut berubah.")
-
-    st.markdown('<p class="rainbow-title">🎉 SELAMAT ULANG TAHUN 🎉</p>', unsafe_allow_html=True)
-    st.markdown(f'<p class="subtitle">Untuk kamu, {nama} tersayang 💖</p>', unsafe_allow_html=True)
+        st.caption("Ganti nama di atas, judul & ucapan otomatis berubah.")
 
     st.markdown(
-        '<div class="balloon-row">'
-        '<span class="balloon">🎈</span><span class="balloon">🎈</span>'
-        '<span class="balloon">🎈</span><span class="balloon">🎈</span>'
-        "</div>",
+        f'<p class="rainbow-title">🎉 HAPPY BIRTHDAY {nama.upper()} 🎉</p>',
         unsafe_allow_html=True,
     )
-    st.markdown('<div class="cake-box">🎂🕯️🎂</div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="wish-box">Happy Birthday {nama}... semoga harimu secerah senyummu! 🥳</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<p class="subtitle">Satu hari spesial, untuk satu orang paling spesial 💖</p>',
+        unsafe_allow_html=True,
+    )
 
-    st.markdown(f'<div class="doa-box">🤲 {DOA}</div>', unsafe_allow_html=True)
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
 
-    st.balloons()
+    st.markdown(
+        """
+        <div class="cake-wrap">
+            <span class="candle">🕯️</span>
+            <span class="cake-emoji">🎂</span>
+            <span class="candle">🕯️</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        f'<div class="wish-box">Happy Birthday, {nama}... semoga hari ini sepenuh cinta seperti kamu di hati aku 🥹💫</div>',
+        unsafe_allow_html=True,
+    )
+
+    st.markdown('<div class="doa-title" style="margin-top:1.2rem;">🤍 Doa Untukmu 🤍</div>', unsafe_allow_html=True)
+    typewriter_component(DOA, speed_ms=30, height=150)
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
     wav_bytes = generate_wav_bytes()
     if putar_musik:
-        autoplay_audio(wav_bytes)
+        components.html(autoplay_audio_html(wav_bytes), height=0, width=0)
 
-    st.divider()
+    st.write("")
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("🔁 Putar Ulang Lagu"):
+        if st.button("🔁 Putar Ulang Lagu", use_container_width=True):
             st.balloons()
-            autoplay_audio(wav_bytes)
+            components.html(autoplay_audio_html(wav_bytes), height=0, width=0)
     with col2:
         st.download_button(
             "⬇️ Unduh Musik (.wav)",
             data=wav_bytes,
             file_name="happy_birthday_tune.wav",
             mime="audio/wav",
+            use_container_width=True,
         )
 
     st.audio(wav_bytes, format="audio/wav")
+    st.caption("Kalau musik tidak otomatis bunyi (aturan browser), tekan ▶️ di atas atau tombol 'Putar Ulang Lagu'.")
 
 
 if __name__ == "__main__":
