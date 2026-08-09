@@ -177,13 +177,47 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ---------- auto-play "Happy Birthday" tune via Web Audio API ----------
-# Musik dibangkitkan langsung dari kode, tidak perlu file mp3 terpisah.
+# ---------- musik "Happy Birthday" via Web Audio API ----------
+# Catatan: browser modern (Chrome/Safari/dll) memblokir audio autoplay
+# sebelum ada interaksi user di halaman. Kode ini tetap MENCOBA autoplay
+# duluan, dan kalau diblokir akan menampilkan tombol musik yang tinggal
+# diklik sekali untuk mulai memutar (musiknya tetap "otomatis" jalan
+# begitu diklik, tanpa perlu file mp3 apapun).
 st.components.v1.html(
     """
+    <div id="music-wrap" style="display:flex; justify-content:center; margin-top:10px;">
+      <button id="play-btn" style="
+          display:none;
+          background: linear-gradient(90deg, #40e0d0, #48cae4);
+          color:#003b5c;
+          border:none;
+          border-radius:30px;
+          padding:10px 22px;
+          font-weight:800;
+          font-size:0.95rem;
+          letter-spacing:0.5px;
+          cursor:pointer;
+          box-shadow:0 4px 14px rgba(64,224,208,0.5);
+      ">🎵 Putar Musik Ulang Tahun</button>
+      <p id="status-text" style="
+          display:none;
+          color:#7fffd4;
+          font-size:0.85rem;
+          text-align:center;
+          font-family:'Trebuchet MS', sans-serif;
+      ">🎶 Musik sedang diputar...</p>
+    </div>
+
     <script>
+    let ctx = null;
+    let played = false;
+
     function playHappyBirthday() {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (played) return;
+        played = true;
+        if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (ctx.state === "suspended") ctx.resume();
+
         const notes = [
             261.63, 261.63, 293.66, 261.63, 349.23, 329.63,
             261.63, 261.63, 293.66, 261.63, 392.00, 349.23,
@@ -196,7 +230,7 @@ st.components.v1.html(
             0.3, 0.2, 0.5, 0.5, 0.5, 0.5, 1.0,
             0.3, 0.2, 0.5, 0.5, 0.5, 1.0
         ];
-        let time = ctx.currentTime + 0.3;
+        let time = ctx.currentTime + 0.2;
         notes.forEach((freq, i) => {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
@@ -211,21 +245,25 @@ st.components.v1.html(
             osc.stop(time + durations[i] + 0.05);
             time += durations[i];
         });
+
+        document.getElementById("play-btn").style.display = "none";
+        document.getElementById("status-text").style.display = "block";
     }
 
-    try {
-        playHappyBirthday();
-    } catch (e) {
-        console.log("Autoplay diblokir, menunggu interaksi user...");
-    }
-    const resumeOnInteract = () => {
-        playHappyBirthday();
-        document.removeEventListener('click', resumeOnInteract);
-        document.removeEventListener('touchstart', resumeOnInteract);
-    };
-    document.addEventListener('click', resumeOnInteract, { once: true });
-    document.addEventListener('touchstart', resumeOnInteract, { once: true });
+    // 1) coba autoplay langsung begitu halaman dimuat
+    window.addEventListener("load", () => {
+        const testCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (testCtx.state === "running") {
+            ctx = testCtx;
+            playHappyBirthday();
+        } else {
+            // 2) kalau diblokir browser, tampilkan tombol untuk mulai musik
+            document.getElementById("play-btn").style.display = "inline-block";
+        }
+    });
+
+    document.getElementById("play-btn").addEventListener("click", playHappyBirthday);
     </script>
     """,
-    height=0,
+    height=70,
 )
