@@ -246,15 +246,20 @@ st.markdown(bubbles_html, unsafe_allow_html=True)
 # 5) MUSIK ULANG TAHUN - AUTOPLAY (dibuat langsung di memori, tanpa file wav)
 # ==============================================================================
 song_bytes = build_birthday_song_bytes()
-audio_b64 = base64.b64encode(song_bytes).decode()
+
 st.markdown(
-    f"""
-    <audio autoplay loop style="display:none">
-        <source src="data:audio/wav;base64,{audio_b64}" type="audio/wav">
-    </audio>
+    """
+    <div style="text-align:center; color:#caf0f8; font-size:1.1rem;
+                font-weight:600; margin-top:10px;">
+        🎵 Musik Ulang Tahun 🎵
+    </div>
     """,
     unsafe_allow_html=True,
 )
+
+# Pemutar musik manual.
+# Browser tidak memblokirnya karena pengguna menekan tombol Play sendiri.
+st.audio(song_bytes, format="audio/wav")
 
 # ==============================================================================
 # 6) KONTEN UTAMA
