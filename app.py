@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """
-🎂✨ HAPPY BIRTHDAY SAYANGNYA AKOOO ✨🎂
+🤠🚀 HAPPY BIRTHDAY SAYANGNYA AKOOO 🚀🤠
 =========================================
-Web app ucapan ulang tahun bertema malam berbintang + neon glassmorphism,
-siap deploy dari GitHub ke Streamlit Community Cloud.
+Web app ucapan ulang tahun bertema "Toy Box" ala kartun mainan
+(langit biru berawan khas kamar anak, kayu peti mainan, bintang sheriff,
+roket, koboi, robot, dadu) -- terinspirasi nuansa Toy Story TANPA memakai
+nama karakter, logo, atau desain resmi Disney/Pixar (itu hak cipta orang
+lain, jadi sengaja dibuat versi generik biar aman dipakai & dibagikan).
+Siap deploy dari GitHub ke Streamlit Community Cloud.
 
 SEMUA KODE ADA DI SATU FILE INI (streamlit_app.py).
 Hanya ada 1 hal wajib di luar kode karena syarat platform Streamlit Cloud
@@ -12,9 +16,11 @@ isinya SATU BARIS -> streamlit
 Tanpa file itu, Streamlit Cloud tidak tahu library apa yang harus diinstall.
 
 Fitur unik di versi ini:
-- 🌌 Latar langit malam dengan bintang berkelip + gradient bergerak
-- 💎 Kartu ucapan bergaya glassmorphism dengan judul neon berkedip pelangi
-- 🎈 Balon & 💝 hati melayang naik terus-menerus di layar
+- ☁️ Latar langit biru cerah dengan awan mengambang, khas kamar mainan
+- 🪵 Kartu ucapan bergaya peti kayu mainan dengan jahitan tali di pinggir
+- 🚀🤠⭐🎲🧸🪀 Ikon-ikon mainan melayang naik terus-menerus di layar
+- 🔤 Judul huruf balok mainan warna-warni yang goyang bergantian
+- ⭐ Lencana bintang sheriff mainan
 - 🕯️ Kue ulang tahun dengan lilin yang nyala apinya berkedip (CSS)
 - 🎊 Confetti meledak otomatis saat halaman dibuka (canvas-confetti)
 - ⌨️ Doa ulang tahun muncul dengan efek mengetik huruf demi huruf (JS)
@@ -458,79 +464,94 @@ DOA = (
 CSS = """
 <style>
 .stApp {
-    background: radial-gradient(ellipse at top, #1b0d3a 0%, #0a0620 60%, #050311 100%);
+    background:
+        radial-gradient(circle at 15% 20%, rgba(255,255,255,0.9) 0, rgba(255,255,255,0.9) 40px, transparent 42px),
+        radial-gradient(circle at 25% 22%, rgba(255,255,255,0.9) 0, rgba(255,255,255,0.9) 55px, transparent 57px),
+        radial-gradient(circle at 35% 18%, rgba(255,255,255,0.9) 0, rgba(255,255,255,0.9) 38px, transparent 40px),
+        radial-gradient(circle at 70% 12%, rgba(255,255,255,0.85) 0, rgba(255,255,255,0.85) 45px, transparent 47px),
+        radial-gradient(circle at 80% 15%, rgba(255,255,255,0.85) 0, rgba(255,255,255,0.85) 32px, transparent 34px),
+        linear-gradient(180deg, #6fc7ff 0%, #8fd6ff 35%, #bfeaff 70%, #eaf8ff 100%);
+    background-repeat: no-repeat;
     background-attachment: fixed;
     overflow-x: hidden;
 }
 
-/* Bintang berkelip */
-.stars {
+/* Awan mengambang seperti langit kamar mainan */
+.clouds {
     position: fixed;
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    background-image:
-        radial-gradient(2px 2px at 20px 30px, #fff, transparent),
-        radial-gradient(2px 2px at 140px 90px, #fff, transparent),
-        radial-gradient(1.5px 1.5px at 90px 40px, #ffd7f5, transparent),
-        radial-gradient(1.5px 1.5px at 200px 150px, #d7e9ff, transparent),
-        radial-gradient(2px 2px at 260px 60px, #fff, transparent),
-        radial-gradient(1.5px 1.5px at 320px 200px, #fff, transparent);
-    background-repeat: repeat;
-    background-size: 340px 220px;
-    animation: twinkle 3s ease-in-out infinite alternate;
+    overflow: hidden;
 }
-@keyframes twinkle {
-    from { opacity: 0.35; }
-    to { opacity: 0.95; }
+.clouds span {
+    position: absolute;
+    font-size: 3.4rem;
+    color: rgba(255,255,255,0.95);
+    filter: drop-shadow(0 4px 3px rgba(0,0,0,0.08));
+    animation-name: drift;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+@keyframes drift {
+    0%   { transform: translateX(-10vw); }
+    100% { transform: translateX(110vw); }
 }
 
 .rainbow-title {
     position: relative;
     z-index: 1;
     text-align: center;
-    font-size: 2.6rem;
+    font-size: 2.5rem;
     font-weight: 900;
     letter-spacing: 1px;
-    background: linear-gradient(270deg, #ff3cac, #ff9900, #ffee00, #33ff77, #00e5ff, #6a5cff, #ff3cac);
-    background-size: 1600% 1600%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: rainbow-move 6s linear infinite;
-    text-shadow: 0 0 25px rgba(255, 255, 255, 0.15);
     margin-bottom: 0.2rem;
 }
-@keyframes rainbow-move {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 100% 50%; }
+.rainbow-title .toy-letter {
+    display: inline-block;
+    padding: 0.05em 0.06em;
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.18);
+    animation: block-bounce 1.6s ease-in-out infinite;
+}
+@keyframes block-bounce {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(-4deg); }
 }
 
 .subtitle {
     position: relative;
     z-index: 1;
     text-align: center;
-    color: #ffd6f5;
-    font-size: 1.25rem;
+    color: #5b3a1a;
+    font-size: 1.2rem;
+    font-weight: 700;
     margin-top: 0;
-    text-shadow: 0 0 12px rgba(255, 214, 245, 0.5);
+    text-shadow: 0 1px 0 rgba(255,255,255,0.5);
 }
 
-/* Kartu kaca */
+/* Kartu bergaya peti kayu mainan */
 .glass-card {
     position: relative;
     z-index: 1;
     max-width: 720px;
     margin: 1.5rem auto;
-    padding: 1.8rem 2rem;
-    border-radius: 26px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 0 40px rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(6px);
+    padding: 1.9rem 2rem;
+    border-radius: 18px;
+    background:
+        repeating-linear-gradient(90deg, #c98a4b 0px, #c98a4b 26px, #bf7f42 27px, #bf7f42 52px);
+    border: 8px solid #7a4a23;
+    box-shadow: 0 10px 26px rgba(0,0,0,0.28), inset 0 0 0 4px rgba(255,255,255,0.08);
+}
+.glass-card::before {
+    content: "";
+    position: absolute;
+    inset: 10px;
+    border: 2px dashed rgba(255,255,255,0.55);
+    border-radius: 10px;
+    pointer-events: none;
 }
 
-/* Balon & hati melayang */
+/* Mainan melayang: roket, topi koboi, bintang, dadu, boneka, yoyo */
 .floaters {
     position: fixed;
     inset: 0;
@@ -542,15 +563,15 @@ CSS = """
     position: absolute;
     bottom: -60px;
     font-size: 2.2rem;
-    opacity: 0.85;
+    opacity: 0.9;
     animation-name: rise;
     animation-timing-function: ease-in;
     animation-iteration-count: infinite;
 }
 @keyframes rise {
     0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
-    10%  { opacity: 0.9; }
-    100% { transform: translateY(-115vh) translateX(30px) rotate(15deg); opacity: 0; }
+    10%  { opacity: 0.95; }
+    100% { transform: translateY(-115vh) translateX(30px) rotate(20deg); opacity: 0; }
 }
 
 /* Kue & lilin */
@@ -584,75 +605,112 @@ CSS = """
     position: relative;
     z-index: 1;
     text-align: center;
-    color: #fff;
-    font-size: 1.35rem;
-    font-weight: 700;
+    color: #fffdf5;
+    font-size: 1.3rem;
+    font-weight: 800;
     margin-top: 0.5rem;
-    text-shadow: 0 0 14px rgba(255, 182, 235, 0.6);
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.35);
 }
 
-/* Bingkai foto */
+/* Bingkai foto ala polaroid dijepit tali di peti mainan */
 .photo-wrap {
     position: relative;
     z-index: 1;
     text-align: center;
-    margin: 0.3rem 0 1rem 0;
+    margin: 0.3rem 0 1.1rem 0;
 }
 .photo-frame {
-    width: 220px;
-    height: 220px;
+    width: 210px;
+    height: 210px;
     object-fit: cover;
-    border-radius: 50%;
-    border: 4px solid transparent;
-    background-image:
-        linear-gradient(#0a0620, #0a0620),
-        linear-gradient(270deg, #ff3cac, #ffee00, #00e5ff, #6a5cff, #ff3cac);
-    background-origin: border-box;
-    background-clip: content-box, border-box;
-    background-size: 100% 100%, 400% 400%;
-    animation: glow-ring 6s linear infinite, pop-in 0.9s ease-out;
-    box-shadow: 0 0 35px rgba(255, 60, 172, 0.45), 0 0 60px rgba(0, 229, 255, 0.25);
-}
-@keyframes glow-ring {
-    0% { background-position: 0% 0%, 0% 50%; }
-    100% { background-position: 0% 0%, 100% 50%; }
+    border-radius: 10px;
+    border: 8px solid #fffdf5;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.35), 0 0 0 3px #7a4a23;
+    animation: pop-in 0.9s ease-out;
+    transform: rotate(-3deg);
 }
 @keyframes pop-in {
-    0% { transform: scale(0.6); opacity: 0; }
-    70% { transform: scale(1.06); opacity: 1; }
-    100% { transform: scale(1); }
+    0% { transform: scale(0.6) rotate(-3deg); opacity: 0; }
+    70% { transform: scale(1.06) rotate(-3deg); opacity: 1; }
+    100% { transform: scale(1) rotate(-3deg); }
 }
 .photo-caption {
     margin-top: 0.6rem;
-    color: #ffd6f5;
+    color: #fff6df;
     font-size: 0.95rem;
-    text-shadow: 0 0 10px rgba(255, 214, 245, 0.5);
+    font-weight: 700;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.35);
 }
 
 .doa-title {
     text-align: center;
-    color: #ffe9a8;
-    font-weight: 700;
+    color: #fff6df;
+    font-weight: 800;
     letter-spacing: 2px;
     margin-bottom: 0.4rem;
     text-transform: uppercase;
     font-size: 0.9rem;
-    opacity: 0.85;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.35);
+}
+
+/* Lencana bintang sheriff mainan */
+.sheriff-badge {
+    display: block;
+    margin: 0.2rem auto 0.8rem auto;
+    width: 70px;
+    height: 70px;
+    text-align: center;
+    line-height: 70px;
+    font-size: 2.2rem;
+    background: radial-gradient(circle, #ffe680 0%, #ffc93c 65%, #e0a316 100%);
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3), inset 0 0 0 3px #a8730f;
+    animation: badge-spin-in 1s ease-out;
+}
+@keyframes badge-spin-in {
+    0% { transform: rotate(-180deg) scale(0.4); opacity: 0; }
+    100% { transform: rotate(0deg) scale(1); opacity: 1; }
 }
 </style>
 
-<div class="stars"></div>
+<div class="clouds">
+    <span style="top:6%;  left:0%;  animation-duration:38s; animation-delay:0s;">☁️</span>
+    <span style="top:14%; left:0%;  animation-duration:52s; animation-delay:6s;">☁️</span>
+    <span style="top:3%;  left:0%;  animation-duration:46s; animation-delay:15s;">☁️</span>
+    <span style="top:20%; left:0%;  animation-duration:60s; animation-delay:2s;">☁️</span>
+</div>
 <div class="floaters">
-    <span style="left:5%;  animation-duration:9s;  animation-delay:0s;">🎈</span>
-    <span style="left:15%; animation-duration:11s; animation-delay:1.5s;">💗</span>
-    <span style="left:28%; animation-duration:8s;  animation-delay:3s;">🎈</span>
-    <span style="left:42%; animation-duration:12s; animation-delay:0.5s;">✨</span>
-    <span style="left:56%; animation-duration:10s; animation-delay:2s;">💗</span>
-    <span style="left:68%; animation-duration:9.5s;animation-delay:4s;">🎈</span>
-    <span style="left:80%; animation-duration:11s; animation-delay:1s;">✨</span>
-    <span style="left:90%; animation-duration:8.5s; animation-delay:2.5s;">💗</span>
+    <span style="left:5%;  animation-duration:9s;  animation-delay:0s;">🚀</span>
+    <span style="left:15%; animation-duration:11s; animation-delay:1.5s;">🤠</span>
+    <span style="left:28%; animation-duration:8s;  animation-delay:3s;">⭐</span>
+    <span style="left:42%; animation-duration:12s; animation-delay:0.5s;">🎲</span>
+    <span style="left:56%; animation-duration:10s; animation-delay:2s;">🧸</span>
+    <span style="left:68%; animation-duration:9.5s;animation-delay:4s;">🪀</span>
+    <span style="left:80%; animation-duration:11s; animation-delay:1s;">🤖</span>
+    <span style="left:90%; animation-duration:8.5s; animation-delay:2.5s;">⭐</span>
 </div>
 """
+
+TOY_COLORS = ["#ff4d4d", "#ffb703", "#3ec46d", "#3aa6ff", "#a06bff", "#ff6fb1"]
+
+
+def render_toy_title(text: str) -> str:
+    """Render judul sebagai huruf balok mainan warna-warni yang goyang bergantian."""
+    spans = []
+    color_i = 0
+    for ch in text:
+        if ch == " ":
+            spans.append(" ")
+            continue
+        color = TOY_COLORS[color_i % len(TOY_COLORS)]
+        delay = (color_i % 6) * 0.12
+        spans.append(
+            f'<span class="toy-letter" style="color:{color}; animation-delay:{delay}s;">{ch}</span>'
+        )
+        color_i += 1
+    return "".join(spans)
+
+
 
 
 def get_photo_data_uri():
@@ -663,11 +721,48 @@ def get_photo_data_uri():
 
 
 def autoplay_audio_html(wav_bytes: bytes) -> str:
+    """Musik diputar otomatis begitu halaman dibuka. Sebagai jaring pengaman
+    (karena kebijakan sebagian browser menahan suara sebelum ada interaksi
+    APAPUN di halaman), skrip ini juga memasang pendengar event pada
+    dokumen utama Streamlit -- begitu pengguna menyentuh/klik/menekan
+    tombol apa pun di halaman (bukan tombol khusus musik), audio langsung
+    dicoba diputar lagi secara otomatis, sekali saja."""
     b64 = base64.b64encode(wav_bytes).decode()
     return f"""
-    <audio autoplay="true" loop>
+    <audio id="bday-audio" autoplay="true" loop>
         <source src="data:audio/wav;base64,{b64}" type="audio/wav">
     </audio>
+    <script>
+    (function() {{
+        var audio = document.getElementById('bday-audio');
+
+        function tryPlay() {{
+            var p = audio.play();
+            if (p !== undefined) {{
+                p.catch(function() {{ /* diblokir browser, tunggu interaksi pengguna */ }});
+            }}
+        }}
+        tryPlay();
+
+        function unlockOnGesture() {{
+            tryPlay();
+        }}
+
+        // Dengarkan interaksi pertama di halaman UTAMA Streamlit (bukan hanya
+        // di dalam iframe kecil ini), supaya musik ikut jalan begitu pengguna
+        // menyentuh/klik apa pun di halaman -- tanpa perlu tombol musik sendiri.
+        try {{
+            var mainDoc = window.parent.document;
+            ["click", "touchstart", "keydown"].forEach(function(evt) {{
+                mainDoc.addEventListener(evt, unlockOnGesture, {{ once: true, passive: true }});
+            }});
+        }} catch (e) {{
+            ["click", "touchstart", "keydown"].forEach(function(evt) {{
+                document.addEventListener(evt, unlockOnGesture, {{ once: true, passive: true }});
+            }});
+        }}
+    }})();
+    </script>
     """
 
 
@@ -729,8 +824,8 @@ def typewriter_component(text: str, speed_ms: int = 35, height: int = 140):
 
 def main():
     st.set_page_config(
-        page_title="Happy Birthday Sayangnya Akoo 🎂",
-        page_icon="🎂",
+        page_title="Happy Birthday Sayangnya Akoo 🤠",
+        page_icon="🤠",
         layout="centered",
     )
     st.markdown(CSS, unsafe_allow_html=True)
@@ -741,16 +836,18 @@ def main():
         nama = st.text_input("Nama panggilan", value="SAYANGNYA AKOOO")
         st.caption("Musik otomatis diputar begitu halaman dibuka. Ganti nama di atas, judul & ucapan otomatis berubah.")
 
+    judul = f"🎉 HAPPY BIRTHDAY {nama.upper()} 🎉"
     st.markdown(
-        f'<p class="rainbow-title">🎉 HAPPY BIRTHDAY {nama.upper()} 🎉</p>',
+        f'<p class="rainbow-title">{render_toy_title(judul)}</p>',
         unsafe_allow_html=True,
     )
     st.markdown(
-        '<p class="subtitle">Satu hari spesial, untuk satu orang paling spesial 💖</p>',
+        '<p class="subtitle">Berpetualang satu tahun lagi bareng kamu, mainan favorit hatiku 🤠🚀</p>',
         unsafe_allow_html=True,
     )
 
     st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.markdown('<div class="sheriff-badge">⭐</div>', unsafe_allow_html=True)
 
     photo_data_uri = get_photo_data_uri()
     if photo_data_uri:
@@ -758,7 +855,7 @@ def main():
             f"""
             <div class="photo-wrap">
                 <img class="photo-frame" src="{photo_data_uri}" alt="Foto berdua">
-                <div class="photo-caption">Kita berdua 💑</div>
+                <div class="photo-caption">Kita berdua, tim mainan terbaik 🧸💑</div>
             </div>
             """,
             unsafe_allow_html=True,
@@ -775,7 +872,7 @@ def main():
         unsafe_allow_html=True,
     )
     st.markdown(
-        f'<div class="wish-box">Happy Birthday, {nama}... semoga hari ini sepenuh cinta seperti kamu di hati aku 🥹💫</div>',
+        f'<div class="wish-box">Happy Birthday, {nama}... semoga hari ini seru dan seceria kotak mainan penuh warna 🤠🚀🧸</div>',
         unsafe_allow_html=True,
     )
 
@@ -797,8 +894,9 @@ def main():
         use_container_width=True,
     )
     st.caption(
-        "🎵 Musik otomatis diputar saat halaman dibuka. Sebagian browser (terutama HP) "
-        "menahan suara sampai layar disentuh sekali -- setelah itu musik langsung jalan."
+        "🎵 Musik langsung dicoba diputar otomatis begitu halaman dibuka. Kalau browser-mu "
+        "menahan suara di awal, musik akan otomatis jalan sendiri begitu ada sentuhan/klik "
+        "pertama di halaman ini -- tidak perlu tombol musik khusus."
     )
 
 
