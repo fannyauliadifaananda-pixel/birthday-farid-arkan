@@ -108,7 +108,10 @@ st.set_page_config(
 )
 
 ASSETS_DIR = os.path.join(os.path.dirname(__file__), "assets")
-PHOTO_PATH = os.path.join(ASSETS_DIR, "foto_faridutt.jpg")
+PHOTO_PATHS = [
+    os.path.join(ASSETS_DIR, "foto_faridutt.jpg"),
+    os.path.join(ASSETS_DIR, "foto_faridutt2.jpg"),
+]
 
 
 def get_base64_file(path):
@@ -195,6 +198,19 @@ st.markdown(
         letter-spacing: 10px;
         margin-top: 1.2em;
     }
+
+    .stTabs [data-baseweb="tab-list"] {
+        justify-content: center;
+        gap: 8px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        color: #caf0f8;
+        font-weight: 600;
+    }
+    .stTabs [aria-selected="true"] {
+        color: #ffffff !important;
+        border-bottom-color: #90e0ef !important;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -243,12 +259,16 @@ st.markdown('<div class="subtitle-text">🌊 Selamat berlayar ke usia baru, dudu
 
 col1, col2, col3 = st.columns([1, 3, 1])
 with col2:
-    st.markdown('<div class="photo-frame">', unsafe_allow_html=True)
-    if os.path.exists(PHOTO_PATH):
-        st.image(PHOTO_PATH, use_container_width=True)
+    existing_photos = [p for p in PHOTO_PATHS if os.path.exists(p)]
+    if existing_photos:
+        st.markdown('<div class="photo-frame">', unsafe_allow_html=True)
+        photo_tabs = st.tabs([f"📸 Foto {i+1}" for i in range(len(existing_photos))])
+        for tab, photo_path in zip(photo_tabs, existing_photos):
+            with tab:
+                st.image(photo_path, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
     else:
-        st.info("Taruh foto kamu di assets/foto_faridutt.jpg")
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.info("Taruh foto kamu di assets/foto_faridutt.jpg dan assets/foto_faridutt2.jpg")
 
 st.markdown(
     """
