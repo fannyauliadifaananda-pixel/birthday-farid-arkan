@@ -246,20 +246,47 @@ st.markdown(bubbles_html, unsafe_allow_html=True)
 # 5) MUSIK ULANG TAHUN - AUTOPLAY (dibuat langsung di memori, tanpa file wav)
 # ==============================================================================
 song_bytes = build_birthday_song_bytes()
+audio_b64 = base64.b64encode(song_bytes).decode("utf-8")
 
 st.markdown(
-    """
+    f"""
     <div style="text-align:center; color:#caf0f8; font-size:1.1rem;
                 font-weight:600; margin-top:10px;">
         🎵 Musik Ulang Tahun 🎵
     </div>
+
+    <audio id="birthdayMusic" autoplay loop playsinline>
+        <source src="data:audio/wav;base64,{audio_b64}" type="audio/wav">
+    </audio>
+
+    <script>
+    // Meminta browser memulai musik otomatis.
+    const music = document.getElementById("birthdayMusic");
+
+    if (music) {{
+        music.volume = 1.0;
+
+        const startMusic = () => {{
+            music.play().catch(() => {{
+                // Browser dapat memblokir autoplay bersuara.
+                // Jika diblokir, musik dapat dimulai setelah klik pertama.
+                const resumeMusic = () => {{
+                    music.play().catch(() => {{}});
+                    document.removeEventListener("click", resumeMusic);
+                    document.removeEventListener("touchstart", resumeMusic);
+                }};
+
+                document.addEventListener("click", resumeMusic, {{once:true}});
+                document.addEventListener("touchstart", resumeMusic, {{once:true}});
+            }});
+        }};
+
+        startMusic();
+    }}
+    </script>
     """,
     unsafe_allow_html=True,
 )
-
-# Pemutar musik manual.
-# Browser tidak memblokirnya karena pengguna menekan tombol Play sendiri.
-st.audio(song_bytes, format="audio/wav")
 
 # ==============================================================================
 # 6) KONTEN UTAMA
